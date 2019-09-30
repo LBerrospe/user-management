@@ -4,10 +4,9 @@ import com.drawsforall.user.management.business.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
-<<<<<<< HEAD
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-=======
+
+
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
->>>>>>> f85098a5efe9e2800d8e6b177acb911bc1d44bcc
+
 
 import java.util.Map;
 
