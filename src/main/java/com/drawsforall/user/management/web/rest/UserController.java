@@ -4,6 +4,7 @@ import com.drawsforall.user.management.business.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -11,7 +12,7 @@ import java.util.Map;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
@@ -39,4 +40,7 @@ public class UserController {
     ) {
         return userService.updateUser(id, fieldsToUpdate);
     }
+
+
+
 }
