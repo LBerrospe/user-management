@@ -54,9 +54,8 @@ public interface UserMapper {
     default List<Link> buildLinksToUserDTO(User user) {
         Link all = linkTo(methodOn(UserController.class).getUsers(null, null)).withRel("all");
         Link selfRel = linkTo(methodOn(UserController.class).getUser(user.getId())).withSelfRel();
-        Link update = linkTo(methodOn(UserController.class).updateUser(user.getId(), null)).withRel("update");
-        Link delete = linkTo(methodOn(UserController.class).updateUser(user.getId(), null)).withRel("delete");
-        return Arrays.asList(all, selfRel, update, delete);
+        Link updateAndDelete = linkTo(methodOn(UserController.class).updateUser(user.getId(), null)).withRel("update/delete");
+        return Arrays.asList(all, selfRel, updateAndDelete);
     }
 
     default List<Link> buildLinksToPagedUsersDTO(int number, int size, boolean hasNext, boolean hasPrevious) {
