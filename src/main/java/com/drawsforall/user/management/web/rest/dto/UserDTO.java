@@ -1,12 +1,17 @@
 package com.drawsforall.user.management.web.rest.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.drawsforall.user.management.persistence.entity.Role;
+import com.drawsforall.user.management.persistence.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.hateoas.ResourceSupport;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+
 @Getter
 @Setter
 @ToString
@@ -17,5 +22,11 @@ public class UserDTO extends ResourceSupport {
     private String password;
     private String firstName;
     private String lastName;
+    private List<String> role;
     private String display;
+
+
+
+
+
 }

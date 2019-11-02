@@ -4,7 +4,7 @@ import com.drawsforall.user.management.persistence.entity.User;
 import com.drawsforall.user.management.web.rest.UserController;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
-import org.mapstruct.Mapper;
+
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
@@ -18,13 +18,14 @@ import java.util.List;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
-@Mapper(componentModel = "spring")
+
 public interface UserMapper {
 
     @Mappings({
             @Mapping(target = "userId", source = "id"),
             @Mapping(target = "display", expression = "java(user.getFirstName() + \" \" + user.getLastName())"),
-            @Mapping(target = "links", source = "user", qualifiedByName = "buildLinksToUserDTO")
+            @Mapping(target = "links", source = "user", qualifiedByName = "buildLinksToUserDTO"),
+            @Mapping(target = "role", expression = "java(user.getRoles().stream().map(role -> role.getName().toString()).collect(Collectors.toList()))")
     })
     UserDTO toUserDTO(User user);
 
@@ -53,7 +54,7 @@ public interface UserMapper {
     @Named("userDTOLinks")
     default List<Link> buildLinksToUserDTO(User user) {
         Link all = linkTo(methodOn(UserController.class).getUsers(null, null)).withRel("all");
-        Link selfOrUpdateOrDelete = linkTo(methodOn(UserController.class).updateUser(user.getId(), null)).withRel("self/update/delete");
+        Link selfOrUpdateOrDelete = linkTo(methodOn(UserController.class).updateUser(user.getId(), null)).withRel("self");
         return Arrays.asList(all, selfOrUpdateOrDelete);
     }
 
