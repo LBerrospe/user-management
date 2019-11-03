@@ -1,10 +1,11 @@
 package com.drawsforall.user.management.business;
 
+import com.drawsforall.user.management.persistence.entity.Role;
 import com.drawsforall.user.management.persistence.entity.User;
 import com.drawsforall.user.management.web.rest.UserController;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
-
+import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
@@ -14,24 +15,29 @@ import org.springframework.hateoas.Link;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
-
+@Mapper(componentModel = "spring")
 public interface UserMapper {
 
     @Mappings({
             @Mapping(target = "userId", source = "id"),
             @Mapping(target = "display", expression = "java(user.getFirstName() + \" \" + user.getLastName())"),
             @Mapping(target = "links", source = "user", qualifiedByName = "buildLinksToUserDTO"),
-            @Mapping(target = "role", expression = "java(user.getRoles().stream().map(role -> role.getName().toString()).collect(Collectors.toList()))")
+            @Mapping(target = "roles", qualifiedByName = "setRolesToUserDTO")
     })
     UserDTO toUserDTO(User user);
 
     List<UserDTO> toUserDTO(List<User> users);
 
-    @Mapping(target = "id", source = "userId")
+    @Mappings({
+            @Mapping(target = "id", source = "userId"),
+            @Mapping(target = "roles", ignore = true)
+    })
     User fromUserDTO(UserDTO userDTO);
 
     default PagedUsersDTO toPagedUsersDTO(Page<User> pagedUsers) {
@@ -74,5 +80,12 @@ public interface UserMapper {
         }
 
         return links;
+    }
+
+    @Named("setRolesToUserDTO")
+    default List<String> setRolesToUserDTO(Set<Role> roles) {
+        return roles.stream()
+                .map(role -> role.getName().toString())
+                .collect(Collectors.toList());
     }
 }

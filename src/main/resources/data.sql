@@ -3,30 +3,35 @@ DROP TABLE IF EXISTS role;
 DROP TABLE IF EXISTS user_roles;
 
 CREATE TABLE user (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  email VARCHAR(250) UNIQUE NOT NULL,
-  password VARCHAR(250) NOT NULL,
-  first_name VARCHAR(250) NOT NULL,
-  last_name VARCHAR(250) NOT NULL
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(250) UNIQUE NOT NULL,
+    password VARCHAR(250) NOT NULL,
+    first_name VARCHAR(250) NOT NULL,
+    last_name VARCHAR(250) NOT NULL
 );
 
-create table role (
-id int not null auto_increment PRIMARY KEY,
-description varchar(255),
-name varchar(255)
- );
-
- create table user_roles (
-user_id int not null,
-role_id int not null,
-primary key (user_id, role_id)
+CREATE TABLE role (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    description VARCHAR(255),
+    name VARCHAR(255)
 );
 
-alter table user_roles add constraint FKh8ciramu9cc9q3qcqiv4ue8a6 foreign key (role_id) references role(id);
-alter table user_roles add constraint FKhfh9dx7w3ubf1co1vdev94g3f foreign key (user_id) references user(id);
+CREATE TABLE user_roles (
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    PRIMARY KEY (user_id, role_id)
+);
 
-INSERT INTO role(description,name) values ('Admin', 'ADMIN');
-INSERT INTO role(description,name) values ('User', 'USER');
+ALTER TABLE user_roles
+    ADD CONSTRAINT FKh8ciramu9cc9q3qcqiv4ue8a6
+    FOREIGN KEY (role_id) REFERENCES role(id);
+
+ALTER TABLE user_roles
+    ADD CONSTRAINT FKhfh9dx7w3ubf1co1vdev94g3f
+    FOREIGN KEY (user_id) REFERENCES user(id);
+
+INSERT INTO role(description,name) VALUES ('Admin', 'ADMIN');
+INSERT INTO role(description,name) VALUES ('User', 'USER');
 
 
 

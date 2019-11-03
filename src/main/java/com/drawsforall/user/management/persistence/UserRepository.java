@@ -20,5 +20,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Boolean findByEmailLike(String email);
 
 
-
 }

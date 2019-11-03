@@ -2,14 +2,10 @@ package com.drawsforall.user.management.web.rest;
 
 import com.drawsforall.user.management.business.AuthenticationService;
 import com.drawsforall.user.management.business.UserService;
-import com.drawsforall.user.management.security.ApiResponse;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -29,15 +24,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @RestController
-@CrossOrigin
 @RequestMapping("/users")
 public class UserController {
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     AuthenticationService authenticationService;
+    @Autowired
+    private UserService userService;
 
     @Secured("ROLE_ADMIN")
     @GetMapping(produces = APPLICATION_JSON_VALUE)
@@ -49,7 +42,7 @@ public class UserController {
         return userService.getUsers(page, size);
     }
 
-    @Secured({"ROLE_ADMIN","ROLE_USER"})
+    @Secured({"ROLE_ADMIN", "ROLE_USER"})
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public UserDTO getUser(@PathVariable Long id) {
         return userService.getUser(id);

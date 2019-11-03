@@ -17,7 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,12 +25,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional
-@Service(value = "userService")
+@Service
 public class UserService implements UserDetailsService {
 
     @Autowired
@@ -50,13 +50,8 @@ public class UserService implements UserDetailsService {
     private BCryptPasswordEncoder passwordEncoder;
 
     //this function is used by SpringSecurity to give the Role.
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-
+    public UserDetails loadUserByUsername(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
-        if(user == null){
-            log.debug("Invalid username or password.");
-            throw new UsernameNotFoundException("Invalid username or password.");
-        }
 
         Set<GrantedAuthority> grantedAuthorities = getAuthorities(user);
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), grantedAuthorities);
@@ -72,7 +67,7 @@ public class UserService implements UserDetailsService {
         log.debug("Adding fields {} to update in existing user {}", fieldsToUpdate, existingUser);
         Map<String, Object> existingUserMap = objectMapper.convertValue(existingUser, Map.class);
         existingUserMap.putAll(fieldsToUpdate);
-        existingUserMap.put("roles",roleRepository.find((List<String>) fieldsToUpdate.get("role")));
+        existingUserMap.put("roles", roleRepository.findAllByNameIn((List<String>) fieldsToUpdate.get("roles")));
         existingUserMap.put("password", passwordEncoder.encode((CharSequence) fieldsToUpdate.get("password")));
         log.debug("Added fields to update in existing user {}", existingUser);
         return objectMapper.convertValue(existingUserMap, User.class);
@@ -99,41 +94,31 @@ public class UserService implements UserDetailsService {
         return userMapper.toUserDTO(user);
     }
 
-    public UserDTO registerNewUser(UserDTO userDTO)   {
-        /*
-        User userWithDuplicateEmail = userRepository.findByEmail(userDTO.getEmail()).isPresent();
-
-        if(userWithDuplicateEmail == true) {
-            log.error(String.format("Duplicate email %", userDTO.getEmail()));
-            throw new RuntimeException("Duplicate email.");
-        }
-        */
+    public UserDTO registerNewUser(UserDTO userDTO) {
+        userRepository.findByEmail(userDTO.getEmail()).ifPresent(user -> {
+            throw new IllegalArgumentException("Duplicate email " + userDTO.getEmail());
+        });
 
         User user = userMapper.fromUserDTO(userDTO);
         log.debug("Creating user {}", userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setRoles(roleRepository.find(Collections.singletonList("USER")));
+        user.setRoles(roleRepository.findAllByNameIn(Collections.singletonList(RoleType.USER.toString())));
         User createdUser = userRepository.save(user);
         log.debug("Created user {}", user);
         return userMapper.toUserDTO(createdUser);
     }
 
-    public UserDTO createUser(UserDTO userDTO)   {
-        /*
-        User userWithDuplicateEmail = userRepository.findByEmail(userDTO.getEmail()).isPresent();
-
-        if(userWithDuplicateEmail == true) {
-            log.error(String.format("Duplicate email %", userDTO.getEmail()));
-            throw new RuntimeException("Duplicate email.");
-        }
-        */
+    public UserDTO createUser(UserDTO userDTO) {
+        userRepository.findByEmail(userDTO.getEmail()).ifPresent(user -> {
+            throw new IllegalArgumentException("Duplicate email " + userDTO.getEmail());
+        });
 
         User user = userMapper.fromUserDTO(userDTO);
         log.debug("Creating user {}", userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         List<RoleType> roleTypes = new ArrayList<>();
-        userDTO.getRole().stream().map(role -> roleTypes.add(RoleType.valueOf(role)));
-        user.setRoles(roleRepository.find(userDTO.getRole()));
+        userDTO.getRoles().stream().map(role -> roleTypes.add(RoleType.valueOf(role)));
+        user.setRoles(roleRepository.findAllByNameIn(userDTO.getRoles()));
         User createdUser = userRepository.save(user);
         log.debug("Created user {}", user);
         return userMapper.toUserDTO(createdUser);

@@ -16,9 +16,11 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
+    static final int ACCESS_TOKEN_VALIDITY_SECONDS = 1 * 60 * 60;
+    static final int FREFRESH_TOKEN_VALIDITY_SECONDS = 6 * 60 * 60;
     private static final String CLIEN_ID = "user-management";
     //client secret= management
-    private static final String CLIENT_SECRET ="$2y$12$b.T4ziYVypUragaKazltX.HvK8ICFNr2yjU18K8JzhURNoLeKTWoC";
+    private static final String CLIENT_SECRET = "$2y$12$b.T4ziYVypUragaKazltX.HvK8ICFNr2yjU18K8JzhURNoLeKTWoC";
     private static final String GRANT_TYPE_PASSWORD = "password";
     private static final String AUTHORIZATION_CODE = "authorization_code";
     private static final String REFRESH_TOKEN = "refresh_token";
@@ -26,8 +28,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private static final String SCOPE_READ = "read";
     private static final String SCOPE_WRITE = "write";
     private static final String TRUST = "trust";
-    static final int ACCESS_TOKEN_VALIDITY_SECONDS = 1*60*60;
-    static final int FREFRESH_TOKEN_VALIDITY_SECONDS = 6*60*60;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -46,12 +46,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(ClientDetailsServiceConfigurer configurer) throws Exception {
-
         configurer
                 .inMemory()
                 .withClient(CLIEN_ID)
                 .secret(CLIENT_SECRET)
-                .authorizedGrantTypes(GRANT_TYPE_PASSWORD, AUTHORIZATION_CODE, REFRESH_TOKEN, IMPLICIT )
+                .authorizedGrantTypes(GRANT_TYPE_PASSWORD, AUTHORIZATION_CODE, REFRESH_TOKEN, IMPLICIT)
                 .scopes(SCOPE_READ, SCOPE_WRITE, TRUST)
                 .accessTokenValiditySeconds(ACCESS_TOKEN_VALIDITY_SECONDS)
                 .refreshTokenValiditySeconds(FREFRESH_TOKEN_VALIDITY_SECONDS);
@@ -59,9 +58,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-
         endpoints
-                .pathMapping("/oauth/token","/login")
+                .pathMapping("/oauth/token", "/login")
                 .authenticationManager(authenticationManager)
                 .accessTokenConverter(accessTokenConverter());
     }

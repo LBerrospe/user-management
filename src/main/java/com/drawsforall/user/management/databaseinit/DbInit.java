@@ -2,6 +2,7 @@ package com.drawsforall.user.management.databaseinit;
 
 import com.drawsforall.user.management.persistence.RoleRepository;
 import com.drawsforall.user.management.persistence.UserRepository;
+import com.drawsforall.user.management.persistence.entity.RoleType;
 import com.drawsforall.user.management.persistence.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,12 @@ public class DbInit implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
-        User user= new User();
+        User user = new User();
         user.setEmail("goku@gmail.com");
         user.setPassword(passwordEncoder.encode("dragonball"));
         user.setFirstName("Goku");
         user.setLastName("Akira");
-        user.setRoles(roleRepository.find(Collections.singletonList("ADMIN")));
+        user.setRoles(roleRepository.findAllByNameIn(Collections.singletonList(RoleType.ADMIN.toString())));
         userRepository.save(user);
         log.debug("User created {}", user);
 
