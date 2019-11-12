@@ -7,7 +7,6 @@ import com.drawsforall.user.management.web.rest.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,25 +32,27 @@ public class UserController {
     private UserService userService;
 
     @Secured("ROLE_ADMIN")
+    @PostMapping(produces = APPLICATION_JSON_VALUE)
+    public UserDTO createUser(@Valid @RequestBody UserDTO userDTO) {
+        return userService.createUser(userDTO);
+    }
+
+    @Secured("ROLE_ADMIN")
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     public PagedUsersDTO getUsers(
             @RequestParam(name = "page", defaultValue = "0") Integer page,
             @RequestParam(name = "size", defaultValue = "20") Integer size
     ) {
-        log.debug(String.format("received request to list user %s", authenticationService.getAuthentication().getPrincipal()));
         return userService.getUsers(page, size);
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_USER"})
-    @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
-    public UserDTO getUser(@PathVariable Long id) {
-        return userService.getUser(id);
-    }
-
-    @Secured("ROLE_ADMIN")
-    @PostMapping(produces = APPLICATION_JSON_VALUE)
-    public UserDTO createUser(@Valid @RequestBody UserDTO userDTO) {
-        return userService.createUser(userDTO);
+    @GetMapping(value = "/lookup", produces = APPLICATION_JSON_VALUE)
+    public UserDTO lookupUser(
+            @RequestParam(name = "by", defaultValue = "id") String by,
+            @RequestParam(name = "value") String value
+    ) {
+        return userService.lookupUser(by, value);
     }
 
     @Secured("ROLE_ADMIN")
@@ -61,11 +62,5 @@ public class UserController {
             @RequestBody Map<String, Object> fieldsToUpdate
     ) {
         return userService.updateUser(id, fieldsToUpdate);
-    }
-
-    @Secured("ROLE_ADMIN")
-    @GetMapping(value = "/search-by-email/{email}", produces = APPLICATION_JSON_VALUE)
-    public UserDTO getUsers(@PathVariable String email) {
-        return userService.getUser(email);
     }
 }
