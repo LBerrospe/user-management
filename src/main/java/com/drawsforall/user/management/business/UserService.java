@@ -4,7 +4,6 @@ import com.drawsforall.user.management.business.exception.UserNotFoundException;
 import com.drawsforall.user.management.persistence.RoleRepository;
 import com.drawsforall.user.management.persistence.UserRepository;
 import com.drawsforall.user.management.persistence.entity.Role;
-import com.drawsforall.user.management.persistence.entity.RoleType;
 import com.drawsforall.user.management.persistence.entity.User;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
@@ -21,11 +20,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +29,9 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 public class UserService implements UserDetailsService {
+
+    private final String ID = "id";
+    private final String EMAIL = "email";
 
     @Autowired
     private UserRepository userRepository;
@@ -51,7 +50,7 @@ public class UserService implements UserDetailsService {
 
     //this function is used by SpringSecurity to give the Role.
     public UserDetails loadUserByUsername(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+        User user = userRepository.findByEmailLike(email).orElseThrow(() -> new UserNotFoundException(email));
 
         Set<GrantedAuthority> grantedAuthorities = getAuthorities(user);
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), grantedAuthorities);
@@ -63,16 +62,6 @@ public class UserService implements UserDetailsService {
         return authorities;
     }
 
-    private User addFieldsToUpdateInExistingUser(User existingUser, Map<String, Object> fieldsToUpdate) {
-        log.debug("Adding fields {} to update in existing user {}", fieldsToUpdate, existingUser);
-        Map<String, Object> existingUserMap = objectMapper.convertValue(existingUser, Map.class);
-        existingUserMap.putAll(fieldsToUpdate);
-        existingUserMap.put("roles", roleRepository.findAllByNameIn((List<String>) fieldsToUpdate.get("roles")));
-        existingUserMap.put("password", passwordEncoder.encode((CharSequence) fieldsToUpdate.get("password")));
-        log.debug("Added fields to update in existing user {}", existingUser);
-        return objectMapper.convertValue(existingUserMap, User.class);
-    }
-
     public PagedUsersDTO getUsers(int page, int size) {
         log.debug("Fetching users");
         Page<User> users = userRepository.findAll(PageRequest.of(page, size));
@@ -80,44 +69,35 @@ public class UserService implements UserDetailsService {
         return userMapper.toPagedUsersDTO(users);
     }
 
-    public UserDTO getUser(Long id) {
-        log.debug("Fetching user {}", id);
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
-        log.debug("Fetched user {}", id);
+    public UserDTO lookupUser(String by, String value) {
+        log.debug("Fetching user by {} with {}", by, value);
+        User user;
+        switch (by) {
+            case ID:
+                Long id = Long.parseLong(value);
+                user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+                break;
+
+            case EMAIL:
+                user = userRepository.findByEmailLike(value).orElseThrow(() -> new UserNotFoundException(value));
+                break;
+
+            default:
+                throw new IllegalArgumentException("Could not find user by " + by);
+        }
+
+        log.debug("Fetched user by {} with {}", by, value);
         return userMapper.toUserDTO(user);
-    }
-
-    public UserDTO getUser(String email) {
-        log.debug("Fetching user {}", email);
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
-        log.debug("Fetched user {}", email);
-        return userMapper.toUserDTO(user);
-    }
-
-    public UserDTO registerNewUser(UserDTO userDTO) {
-        userRepository.findByEmail(userDTO.getEmail()).ifPresent(user -> {
-            throw new IllegalArgumentException("Duplicate email " + userDTO.getEmail());
-        });
-
-        User user = userMapper.fromUserDTO(userDTO);
-        log.debug("Creating user {}", userDTO);
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setRoles(roleRepository.findAllByNameIn(Collections.singletonList(RoleType.USER.toString())));
-        User createdUser = userRepository.save(user);
-        log.debug("Created user {}", user);
-        return userMapper.toUserDTO(createdUser);
     }
 
     public UserDTO createUser(UserDTO userDTO) {
-        userRepository.findByEmail(userDTO.getEmail()).ifPresent(user -> {
+        userRepository.findByEmailLike(userDTO.getEmail()).ifPresent(user -> {
             throw new IllegalArgumentException("Duplicate email " + userDTO.getEmail());
         });
 
         User user = userMapper.fromUserDTO(userDTO);
         log.debug("Creating user {}", userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        List<RoleType> roleTypes = new ArrayList<>();
-        userDTO.getRoles().stream().map(role -> roleTypes.add(RoleType.valueOf(role)));
         user.setRoles(roleRepository.findAllByNameIn(userDTO.getRoles()));
         User createdUser = userRepository.save(user);
         log.debug("Created user {}", user);
@@ -131,5 +111,15 @@ public class UserService implements UserDetailsService {
         User updatedUser = userRepository.save(userToUpdate);
         log.debug("Updated user {}", id);
         return userMapper.toUserDTO(updatedUser);
+    }
+
+    private User addFieldsToUpdateInExistingUser(User existingUser, Map<String, Object> fieldsToUpdate) {
+        log.debug("Adding fields {} to update in existing user {}", fieldsToUpdate, existingUser);
+        Map<String, Object> existingUserMap = objectMapper.convertValue(existingUser, Map.class);
+        existingUserMap.putAll(fieldsToUpdate);
+        existingUserMap.put("roles", roleRepository.findAllByNameIn((List<String>) fieldsToUpdate.get("roles")));
+        existingUserMap.put("password", passwordEncoder.encode((CharSequence) fieldsToUpdate.get("password")));
+        log.debug("Added fields to update in existing user {}", existingUser);
+        return objectMapper.convertValue(existingUserMap, User.class);
     }
 }

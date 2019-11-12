@@ -23,5 +23,6 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     private RoleType name;
+
     private String description;
 }

@@ -26,16 +26,21 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Email(message = "*Please Provide a valid email.")
     @NotEmpty(message = "*Please provide an email")
     private String email;
+
     @Length(min = 5, message = "*Your password must have at least 5 characters")
     @NotEmpty(message = "*Please provide your password")
     private String password;
+
     @NotEmpty(message = "*Please provide your name")
     private String firstName;
+
     @NotEmpty(message = "*Please provide your last name")
     private String lastName;
+
     @NotEmpty(message = "*Please provide a Role")
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",

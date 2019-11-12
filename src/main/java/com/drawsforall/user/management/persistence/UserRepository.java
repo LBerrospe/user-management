@@ -12,12 +12,5 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByEmail(String email);
-
-    @Query(value = "SELECT mail FROM USER mail where LOWER(mail.email) = LOWER(?1) ", nativeQuery = true)
-    List<User> find(@Param("email") String email);
-
-    Boolean findByEmailLike(String email);
-
-
+    Optional<User> findByEmailLike(String email);
 }

@@ -18,15 +18,12 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
         resources.resourceId(RESOURCE_ID).stateless(false);
     }
 
-
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.
-                anonymous().disable()
+        http
+                .anonymous().disable()
                 .authorizeRequests()
                 .antMatchers("/admin/**").access("hasRole('ADMIN')")
                 .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
     }
-
-
 }
