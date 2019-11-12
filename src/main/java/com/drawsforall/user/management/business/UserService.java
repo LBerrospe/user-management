@@ -50,7 +50,7 @@ public class UserService implements UserDetailsService {
 
     //this function is used by SpringSecurity to give the Role.
     public UserDetails loadUserByUsername(String email) {
-        User user = userRepository.findByEmailLike(email).orElseThrow(() -> new UserNotFoundException(email));
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(() -> new UserNotFoundException(email));
 
         Set<GrantedAuthority> grantedAuthorities = getAuthorities(user);
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), grantedAuthorities);
@@ -79,7 +79,7 @@ public class UserService implements UserDetailsService {
                 break;
 
             case EMAIL:
-                user = userRepository.findByEmailLike(value).orElseThrow(() -> new UserNotFoundException(value));
+                user = userRepository.findByEmailIgnoreCase(value).orElseThrow(() -> new UserNotFoundException(value));
                 break;
 
             default:
@@ -91,7 +91,7 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDTO createUser(UserDTO userDTO) {
-        userRepository.findByEmailLike(userDTO.getEmail()).ifPresent(user -> {
+        userRepository.findByEmailIgnoreCase(userDTO.getEmail()).ifPresent(user -> {
             throw new IllegalArgumentException("Duplicate email " + userDTO.getEmail());
         });
 
