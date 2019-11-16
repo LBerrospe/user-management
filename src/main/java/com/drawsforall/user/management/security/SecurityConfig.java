@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 
 import javax.annotation.Resource;
 
@@ -39,7 +40,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/register").permitAll()
                 .antMatchers("/users").authenticated();
     }
 
@@ -47,5 +47,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
     }
-
 }

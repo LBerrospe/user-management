@@ -1,6 +1,7 @@
 package com.drawsforall.user.management.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,12 +19,23 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     static final int ACCESS_TOKEN_VALIDITY_SECONDS = 1 * 60 * 60;
     static final int FREFRESH_TOKEN_VALIDITY_SECONDS = 6 * 60 * 60;
-    private static final String CLIEN_ID = "user-management";
-    //client secret= management
-    private static final String CLIENT_SECRET = "$2y$12$b.T4ziYVypUragaKazltX.HvK8ICFNr2yjU18K8JzhURNoLeKTWoC";
+
+    @Value("${app.CLIENT_ID}")
+    private String CLIENT_ID;
+
+    @Value("${app.CLIENT_SECRET}")
+    private String CLIENT_SECRET;
+
+    @Value("${app.signInKey}")
+    private String signInKey;
+
+    //The Password grant type is used by first-party clients to exchange a user's credentials for an access token.
     private static final String GRANT_TYPE_PASSWORD = "password";
+    //The Authorization Code grant type is used by confidential and public clients to exchange an authorization code for an access token.
     private static final String AUTHORIZATION_CODE = "authorization_code";
+    //The Refresh Token grant type is used by clients to exchange a refresh token for an access token when the access token has expired.
     private static final String REFRESH_TOKEN = "refresh_token";
+    //The IMPLICIT grant type is a simplified flow that can be used by public clients, where the access token is returned immediately without an extra authorization code exchange step.
     private static final String IMPLICIT = "implicit";
     private static final String SCOPE_READ = "read";
     private static final String SCOPE_WRITE = "write";
@@ -35,7 +47,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        converter.setSigningKey("as466gf");
+        converter.setSigningKey(signInKey);
         return converter;
     }
 
@@ -48,7 +60,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     public void configure(ClientDetailsServiceConfigurer configurer) throws Exception {
         configurer
                 .inMemory()
-                .withClient(CLIEN_ID)
+                .withClient(CLIENT_ID)
                 .secret(CLIENT_SECRET)
                 .authorizedGrantTypes(GRANT_TYPE_PASSWORD, AUTHORIZATION_CODE, REFRESH_TOKEN, IMPLICIT)
                 .scopes(SCOPE_READ, SCOPE_WRITE, TRUST)
@@ -63,6 +75,4 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 .authenticationManager(authenticationManager)
                 .accessTokenConverter(accessTokenConverter());
     }
-
-
 }

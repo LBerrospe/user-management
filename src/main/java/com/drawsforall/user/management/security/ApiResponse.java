@@ -3,7 +3,6 @@ package com.drawsforall.user.management.security;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @Setter
@@ -14,9 +13,14 @@ public class ApiResponse {
     private String message;
     private Object result;
 
-    public ApiResponse(HttpStatus status, String message, Object result) {
-        this.status = status.value();
+    public ApiResponse(int status, String message, Object result){
+        this.status = status;
         this.message = message;
         this.result = result;
+    }
+
+    public ApiResponse(int status, String message){
+        this.status = status;
+        this.message = message;
     }
 }

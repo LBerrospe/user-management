@@ -4,7 +4,9 @@ import com.drawsforall.user.management.business.exception.UserNotFoundException;
 import com.drawsforall.user.management.persistence.RoleRepository;
 import com.drawsforall.user.management.persistence.UserRepository;
 import com.drawsforall.user.management.persistence.entity.Role;
+import com.drawsforall.user.management.persistence.entity.RoleType;
 import com.drawsforall.user.management.persistence.entity.User;
+import com.drawsforall.user.management.security.ApiResponse;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +23,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +56,9 @@ public class UserService implements UserDetailsService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     //this function is used by SpringSecurity to give the Role.
     public UserDetails loadUserByUsername(String email) {
         User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(() -> new UserNotFoundException(email));
@@ -63,7 +74,7 @@ public class UserService implements UserDetailsService {
     }
 
     public PagedUsersDTO getUsers(int page, int size) {
-        log.debug("Fetching users");
+        log.debug("Fetching users"+ authenticationService.getAuthentication().getAuthorities().toString());
         Page<User> users = userRepository.findAll(PageRequest.of(page, size));
         log.debug("Fetched {} users", users.getNumberOfElements());
         return userMapper.toPagedUsersDTO(users);
@@ -94,11 +105,16 @@ public class UserService implements UserDetailsService {
         userRepository.findByEmailIgnoreCase(userDTO.getEmail()).ifPresent(user -> {
             throw new IllegalArgumentException("Duplicate email " + userDTO.getEmail());
         });
-
         User user = userMapper.fromUserDTO(userDTO);
         log.debug("Creating user {}", userDTO);
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setRoles(roleRepository.findAllByNameIn(userDTO.getRoles()));
+        String role=authenticationService.getAuthentication().getAuthorities().toString();
+        if (role.contains("ROLE_ANONYMOUS")){
+            user.setRoles(roleRepository.findAllByNameIn(Collections.singletonList(RoleType.USER.name())));
+        } else if(role.contains("ROLE_ADMIN")) {
+            user.setRoles(roleRepository.findAllByNameIn(userDTO.getRoles()));
+        } else {
+            throw new IllegalArgumentException("You are already an user.");
+        }
         User createdUser = userRepository.save(user);
         log.debug("Created user {}", user);
         return userMapper.toUserDTO(createdUser);

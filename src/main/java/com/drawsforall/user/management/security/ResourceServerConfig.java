@@ -1,5 +1,6 @@
 package com.drawsforall.user.management.security;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -21,9 +22,20 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http
-                .anonymous().disable()
+                .anonymous().and()
                 .authorizeRequests()
-                .antMatchers("/admin/**").access("hasRole('ADMIN')")
-                .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
+                .antMatchers("/admin/**").access("hasRole('ADMIN')").and()
+                .exceptionHandling().accessDeniedHandler(accessDeniedHandler())
+                .authenticationEntryPoint(authenticationEntryPoint());
+    }
+
+    @Bean
+    RestAccessDeniedHandler accessDeniedHandler() {
+        return new RestAccessDeniedHandler();
+    }
+
+    @Bean
+    RestAuthenticationEntryPoint authenticationEntryPoint() {
+        return new RestAuthenticationEntryPoint();
     }
 }

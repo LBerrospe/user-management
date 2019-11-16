@@ -11,6 +11,7 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.Link;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,8 @@ public interface UserMapper {
             @Mapping(target = "userId", source = "id"),
             @Mapping(target = "display", expression = "java(user.getFirstName() + \" \" + user.getLastName())"),
             @Mapping(target = "links", source = "user", qualifiedByName = "buildLinksToUserDTO"),
-            @Mapping(target = "roles", qualifiedByName = "setRolesToUserDTO")
+            @Mapping(target = "roles", qualifiedByName = "setRolesToUserDTO"),
+            @Mapping(target = "password", qualifiedByName = "setEncoderPassword")
     })
     UserDTO toUserDTO(User user);
 
@@ -36,7 +38,8 @@ public interface UserMapper {
 
     @Mappings({
             @Mapping(target = "id", source = "userId"),
-            @Mapping(target = "roles", ignore = true)
+            @Mapping(target = "roles", ignore = true),
+            @Mapping(target ="password", qualifiedByName = "getEncoderPassword")
     })
     User fromUserDTO(UserDTO userDTO);
 
@@ -87,5 +90,17 @@ public interface UserMapper {
         return roles.stream()
                 .map(role -> role.getName().toString())
                 .collect(Collectors.toList());
+    }
+
+    @Named("setEncoderPassword")
+    default String setEncoderPassword(String password){
+        BCryptPasswordEncoder encoder=new BCryptPasswordEncoder();
+        return encoder.encode(password);
+    }
+
+    @Named("getEncoderPassword")
+    default String getEncoderPassword(String password){
+        BCryptPasswordEncoder encoder=new BCryptPasswordEncoder();
+        return encoder.encode(password);
     }
 }

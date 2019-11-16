@@ -2,10 +2,13 @@ package com.drawsforall.user.management.web.rest;
 
 import com.drawsforall.user.management.business.AuthenticationService;
 import com.drawsforall.user.management.business.UserService;
+import com.drawsforall.user.management.security.ApiResponse;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,10 +34,10 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Secured("ROLE_ADMIN")
+
     @PostMapping(produces = APPLICATION_JSON_VALUE)
-    public UserDTO createUser(@Valid @RequestBody UserDTO userDTO) {
-        return userService.createUser(userDTO);
+    public ApiResponse createUser(@Valid @RequestBody UserDTO userDTO) {
+        return new ApiResponse(202, "User Created: "+userDTO.getEmail(), userService.createUser(userDTO))   ;
     }
 
     @Secured("ROLE_ADMIN")
