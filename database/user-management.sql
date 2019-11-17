@@ -1,7 +1,3 @@
-DROP TABLE IF EXISTS user_roles;
-DROP TABLE IF EXISTS role;
-DROP TABLE IF EXISTS user;
-
 CREATE TABLE user
 (
     id         INT                 NOT NULL AUTO_INCREMENT PRIMARY KEY,
