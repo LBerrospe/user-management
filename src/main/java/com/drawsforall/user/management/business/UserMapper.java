@@ -30,7 +30,7 @@ public interface UserMapper {
             @Mapping(target = "display", expression = "java(user.getFirstName() + \" \" + user.getLastName())"),
             @Mapping(target = "links", source = "user", qualifiedByName = "buildLinksToUserDTO"),
             @Mapping(target = "roles", qualifiedByName = "setRolesToUserDTO"),
-            @Mapping(target = "password", qualifiedByName = "setEncoderPassword")
+            @Mapping(target = "password", qualifiedByName = "setEncodedPassword")
     })
     UserDTO toUserDTO(User user);
 
@@ -38,8 +38,8 @@ public interface UserMapper {
 
     @Mappings({
             @Mapping(target = "id", source = "userId"),
-            @Mapping(target = "roles", ignore = true),
-            @Mapping(target ="password", qualifiedByName = "getEncoderPassword")
+            @Mapping(target = "password", qualifiedByName = "setDecodedPassword"),
+            @Mapping(target = "roles", ignore = true)
     })
     User fromUserDTO(UserDTO userDTO);
 
@@ -92,15 +92,15 @@ public interface UserMapper {
                 .collect(Collectors.toList());
     }
 
-    @Named("setEncoderPassword")
-    default String setEncoderPassword(String password){
-        BCryptPasswordEncoder encoder=new BCryptPasswordEncoder();
+    @Named("setEncodedPassword")
+    default String setEncoderPassword(String password) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(password);
     }
 
-    @Named("getEncoderPassword")
-    default String getEncoderPassword(String password){
-        BCryptPasswordEncoder encoder=new BCryptPasswordEncoder();
+    @Named("setDecodedPassword")
+    default String setDecodedPassword(String password) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(password);
     }
 }

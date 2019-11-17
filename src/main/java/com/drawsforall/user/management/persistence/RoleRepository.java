@@ -12,6 +12,6 @@ import java.util.Set;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Integer> {
 
-    @Query(value = "SELECT * FROM Role where name IN (:roles)", nativeQuery = true)
+    @Query(value = "SELECT * FROM role WHERE name IN (:roles)", nativeQuery = true)
     Set<Role> findAllByNameIn(@Param("roles") List<String> roles);
 }

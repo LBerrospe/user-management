@@ -19,16 +19,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     static final int ACCESS_TOKEN_VALIDITY_SECONDS = 1 * 60 * 60;
     static final int FREFRESH_TOKEN_VALIDITY_SECONDS = 6 * 60 * 60;
-
-    @Value("${app.CLIENT_ID}")
-    private String CLIENT_ID;
-
-    @Value("${app.CLIENT_SECRET}")
-    private String CLIENT_SECRET;
-
-    @Value("${app.signInKey}")
-    private String signInKey;
-
     //The Password grant type is used by first-party clients to exchange a user's credentials for an access token.
     private static final String GRANT_TYPE_PASSWORD = "password";
     //The Authorization Code grant type is used by confidential and public clients to exchange an authorization code for an access token.
@@ -41,8 +31,21 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private static final String SCOPE_WRITE = "write";
     private static final String TRUST = "trust";
 
-    @Autowired
+    @Value("${app.CLIENT_ID}")
+    private String CLIENT_ID;
+
+    @Value("${app.CLIENT_SECRET}")
+    private String CLIENT_SECRET;
+
+    @Value("${app.signInKey}")
+    private String signInKey;
+
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    public AuthorizationServerConfig(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
 
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {

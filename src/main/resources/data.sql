@@ -1,5 +1,7 @@
-INSERT INTO role (description,name) VALUES ('Admin', 'ADMIN');
-INSERT INTO role (description,name) VALUES ('User', 'USER');
+INSERT INTO role (id, description, name) VALUES ('1', 'Admin', 'ROLE_ADMIN');
+INSERT INTO role (id, description, name) VALUES ('2', 'User create', 'ROLE_USER_CREATE');
+INSERT INTO role (id, description, name) VALUES ('3', 'User update', 'ROLE_USER_UPDATE');
+INSERT INTO role (id, description, name) VALUES ('4', 'User', 'ROLE_USER');
 
 -- password = dragonball -> bncrypt
 INSERT INTO user (id, email, password, first_name, last_name) VALUES ('1', 'goku@gmail.com', '$2y$12$s9uXdKgvgZhpVQbVm1zxyOLeOJ3gTdrRQ7npt9yzNGCLykU2oI.9O', 'Goku', 'Akira');

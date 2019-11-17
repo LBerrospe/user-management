@@ -1,14 +1,11 @@
 package com.drawsforall.user.management.web.rest;
 
-import com.drawsforall.user.management.business.AuthenticationService;
 import com.drawsforall.user.management.business.UserService;
 import com.drawsforall.user.management.security.ApiResponse;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.Map;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
@@ -29,15 +27,17 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    AuthenticationService authenticationService;
-    @Autowired
     private UserService userService;
 
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
+    @Secured({"ROLE_ADMIN", "ROLE_USER_CREATE", "ROLE_ANONYMOUS"})
     @PostMapping(produces = APPLICATION_JSON_VALUE)
     public ApiResponse createUser(@Valid @RequestBody UserDTO userDTO) {
-        return new ApiResponse(202, "User Created: "+userDTO.getEmail(), userService.createUser(userDTO))   ;
+        return new ApiResponse(CREATED.value(), "User " + userDTO.getEmail() + " created", userService.createUser(userDTO));
     }
 
     @Secured("ROLE_ADMIN")
@@ -58,7 +58,7 @@ public class UserController {
         return userService.lookupUser(by, value);
     }
 
-    @Secured("ROLE_ADMIN")
+    @Secured({"ROLE_ADMIN", "ROLE_USER_UPDATE"})
     @PatchMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public UserDTO updateUser(
             @PathVariable Long id,

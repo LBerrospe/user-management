@@ -6,7 +6,6 @@ import com.drawsforall.user.management.persistence.UserRepository;
 import com.drawsforall.user.management.persistence.entity.Role;
 import com.drawsforall.user.management.persistence.entity.RoleType;
 import com.drawsforall.user.management.persistence.entity.User;
-import com.drawsforall.user.management.security.ApiResponse;
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,9 +20,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -36,45 +31,35 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final String ID = "id";
     private final String EMAIL = "email";
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired
     private UserMapper userMapper;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
     private AuthenticationService authenticationService;
 
-    //this function is used by SpringSecurity to give the Role.
-    public UserDetails loadUserByUsername(String email) {
-        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(() -> new UserNotFoundException(email));
-
-        Set<GrantedAuthority> grantedAuthorities = getAuthorities(user);
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), grantedAuthorities);
-    }
-
-    private Set<GrantedAuthority> getAuthorities(User user) {
-        Set<Role> roleByUserId = user.getRoles();
-        final Set<GrantedAuthority> authorities = roleByUserId.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toString().toUpperCase())).collect(Collectors.toSet());
-        return authorities;
+    @Autowired
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, UserMapper userMapper, ObjectMapper objectMapper, BCryptPasswordEncoder passwordEncoder, AuthenticationService authenticationService) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.userMapper = userMapper;
+        this.objectMapper = objectMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationService = authenticationService;
     }
 
     public PagedUsersDTO getUsers(int page, int size) {
-        log.debug("Fetching users"+ authenticationService.getAuthentication().getAuthorities().toString());
+        log.debug("Fetching users");
         Page<User> users = userRepository.findAll(PageRequest.of(page, size));
         log.debug("Fetched {} users", users.getNumberOfElements());
         return userMapper.toPagedUsersDTO(users);
@@ -107,14 +92,11 @@ public class UserService implements UserDetailsService {
         });
         User user = userMapper.fromUserDTO(userDTO);
         log.debug("Creating user {}", userDTO);
-        String role=authenticationService.getAuthentication().getAuthorities().toString();
-        if (role.contains("ROLE_ANONYMOUS")){
-            user.setRoles(roleRepository.findAllByNameIn(Collections.singletonList(RoleType.USER.name())));
-        } else if(role.contains("ROLE_ADMIN")) {
-            user.setRoles(roleRepository.findAllByNameIn(userDTO.getRoles()));
-        } else {
-            throw new IllegalArgumentException("You are already an user.");
-        }
+        Collection<? extends GrantedAuthority> authorities = authenticationService.getAuthentication().getAuthorities();
+        Set<Role> roles = authorities.contains(RoleType.ROLE_ADMIN.toString())
+                ? roleRepository.findAllByNameIn(userDTO.getRoles())
+                : roleRepository.findAllByNameIn(Collections.singletonList(RoleType.ROLE_USER.name()));
+        user.setRoles(roles);
         User createdUser = userRepository.save(user);
         log.debug("Created user {}", user);
         return userMapper.toUserDTO(createdUser);
