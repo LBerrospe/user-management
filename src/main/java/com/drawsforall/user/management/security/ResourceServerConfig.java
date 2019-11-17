@@ -1,6 +1,6 @@
 package com.drawsforall.user.management.security;
 
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -13,6 +13,16 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     private static final String RESOURCE_ID = "resource_id";
 
+    private RestAccessDeniedHandler restAccessDeniedHandler;
+
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
+    @Autowired
+    public ResourceServerConfig(RestAccessDeniedHandler restAccessDeniedHandler, RestAuthenticationEntryPoint restAuthenticationEntryPoint) {
+        this.restAccessDeniedHandler = restAccessDeniedHandler;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+    }
+
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
         resources.resourceId(RESOURCE_ID).stateless(false);
@@ -24,17 +34,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .anonymous().and()
                 .authorizeRequests()
                 .antMatchers("/admin/**").access("hasRole('ADMIN')").and()
-                .exceptionHandling().accessDeniedHandler(accessDeniedHandler())
-                .authenticationEntryPoint(authenticationEntryPoint());
-    }
-
-    @Bean
-    RestAccessDeniedHandler accessDeniedHandler() {
-        return new RestAccessDeniedHandler();
-    }
-
-    @Bean
-    RestAuthenticationEntryPoint authenticationEntryPoint() {
-        return new RestAuthenticationEntryPoint();
+                .exceptionHandling().accessDeniedHandler(restAccessDeniedHandler)
+                .authenticationEntryPoint(restAuthenticationEntryPoint);
     }
 }
