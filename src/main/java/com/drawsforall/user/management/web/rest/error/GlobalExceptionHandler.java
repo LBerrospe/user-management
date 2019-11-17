@@ -2,10 +2,10 @@ package com.drawsforall.user.management.web.rest.error;
 
 import com.drawsforall.user.management.business.exception.UserNotFoundException;
 import com.drawsforall.user.management.web.rest.dto.APIErrorResponseDTO;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,6 +13,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -25,14 +26,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   HttpHeaders headers, HttpStatus status,
                                                                   WebRequest request) {
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .findFirst()
-                .orElse(ex.getMessage());
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(","));
         return response(ex, request, HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Object> response(Exception ex, WebRequest request, HttpStatus status) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), status, request);
+        return handleExceptionInternal(ex, new APIErrorResponseDTO(LocalDateTime.now(), status, ex.getMessage()), new HttpHeaders(), status, request);
     }
 
     @ExceptionHandler({
