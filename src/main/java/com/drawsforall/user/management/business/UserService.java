@@ -13,12 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -88,10 +86,10 @@ public class UserService {
         });
         User user = userMapper.fromUserDTO(userDTO);
         log.debug("Creating user {}", userDTO);
-        Collection<? extends GrantedAuthority> authorities = authenticationService.getAuthentication().getAuthorities();
-        Set<Role> roles = authorities.contains(RoleType.ROLE_ADMIN.toString())
-                ? roleRepository.findAllByNameIn(userDTO.getRoles())
-                : roleRepository.findAllByNameIn(Collections.singletonList(RoleType.ROLE_USER.name()));
+        boolean isAnonymousAuthentication = authenticationService.isAnonymousAuthentication();
+        Set<Role> roles = isAnonymousAuthentication
+                ? roleRepository.findAllByNameIn(Collections.singletonList(RoleType.ROLE_USER.name()))
+                : roleRepository.findAllByNameIn(userDTO.getRoles());
         user.setRoles(roles);
         User createdUser = userRepository.save(user);
         log.debug("Created user {}", user);

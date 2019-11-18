@@ -52,7 +52,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-            IOException.class
+            IOException.class,
+            NumberFormatException.class
     })
     protected ResponseEntity<Object> handleInternalServerErrorException(RuntimeException ex, WebRequest request) {
         return handleExceptionInternal(ex, INTERNAL_SERVER_ERROR, request);

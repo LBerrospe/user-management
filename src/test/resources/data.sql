@@ -1,9 +1,9 @@
 INSERT INTO role (id, description, name)
 VALUES ('1', 'Admin', 'ROLE_ADMIN');
 INSERT INTO role (id, description, name)
-VALUES ('2', 'User create', 'ROLE_USER_CREATE');
+VALUES ('2', 'User create', 'ROLE_USER_CREATOR');
 INSERT INTO role (id, description, name)
-VALUES ('3', 'User update', 'ROLE_USER_UPDATE');
+VALUES ('3', 'User update', 'ROLE_USER_UPDATER');
 INSERT INTO role (id, description, name)
 VALUES ('4', 'User', 'ROLE_USER');
 
