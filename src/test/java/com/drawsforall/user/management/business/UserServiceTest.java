@@ -150,6 +150,20 @@ public class UserServiceTest {
         userService.createUser(userDTO);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void createUser_DuplicatedEmail() {
+        List<String> rolesToAuthenticate = Arrays.asList(ROLE_ANONYMOUS);
+
+        String email = "yagami.light@deathnote.com";
+        String password = "YagamiLight";
+        String firstName = "Yagami";
+        String lastName = "Light";
+
+        authenticateAs(rolesToAuthenticate);
+        UserDTO userDTO = new UserDTO(null, email, password, firstName, lastName, null, null, null, null);
+        userService.createUser(userDTO);
+    }
+
     @Test(expected = ConstraintViolationException.class)
     public void createUser_NotValidSize() {
         List<String> rolesToAuthenticate = Arrays.asList(ROLE_ANONYMOUS);
