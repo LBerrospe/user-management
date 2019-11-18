@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ControllerAdvice
@@ -47,6 +49,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     })
     protected ResponseEntity<Object> handleBadRequestException(RuntimeException ex, WebRequest request) {
         return handleExceptionInternal(ex, BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({
+            IOException.class
+    })
+    protected ResponseEntity<Object> handleInternalServerErrorException(RuntimeException ex, WebRequest request) {
+        return handleExceptionInternal(ex, INTERNAL_SERVER_ERROR, request);
     }
 
     private ResponseEntity<Object> handleExceptionInternal(Exception ex, HttpStatus status, WebRequest request) {
