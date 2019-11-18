@@ -2,13 +2,14 @@ package com.drawsforall.user.management.business;
 
 import com.drawsforall.user.management.web.rest.dto.PagedUsersDTO;
 import com.drawsforall.user.management.web.rest.dto.UserDTO;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Map;
@@ -26,6 +27,11 @@ public class UserServiceTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Before
+    public void setUp() throws Exception {
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
 
     @Test
     public void getUsers() {
@@ -66,8 +72,7 @@ public class UserServiceTest {
         String firstName = "L";
         String lastName = "Lawliet";
 
-        UserDTO userDTO = new UserDTO(null, email, password, firstName, lastName, null, null);
-        SecurityContextHolder.setContext(SecurityContextHolder.createEmptyContext());
+        UserDTO userDTO = new UserDTO(null, email, password, firstName, lastName, null, null, null, null);
         UserDTO createdUser = userService.createUser(userDTO);
 
         assertNotNull(createdUser);
@@ -85,7 +90,7 @@ public class UserServiceTest {
         String firstName = "Son";
         String lastName = "Goku";
 
-        UserDTO userDTO = new UserDTO(null, email, password, firstName, lastName, null, null);
+        UserDTO userDTO = new UserDTO(null, email, password, firstName, lastName, null, null, null, null);
         UserDTO updatedUser = userService.updateUser(id, objectMapper.convertValue(userDTO, Map.class));
 
         assertNotNull(updatedUser);

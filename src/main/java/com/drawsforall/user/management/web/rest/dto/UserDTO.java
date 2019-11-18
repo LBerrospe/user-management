@@ -10,6 +10,7 @@ import org.springframework.hateoas.ResourceSupport;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -39,6 +40,10 @@ public class UserDTO extends ResourceSupport {
     private String lastName;
 
     private String display;
+
+    private LocalDateTime createdDate;
+
+    private LocalDateTime updatedDate;
 
     private List<String> roles;
 }
